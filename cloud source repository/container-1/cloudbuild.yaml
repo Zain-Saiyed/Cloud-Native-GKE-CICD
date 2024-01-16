@@ -1,0 +1,46 @@
+steps:
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', '${_IMAGE_}', '.']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '${_IMAGE_}']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['build', '-t', '${_AR_IMAGE_}', '.']
+
+  - name: 'gcr.io/cloud-builders/docker'
+    args: ['push', '${_AR_IMAGE_}']
+
+  - name: 'gcr.io/cloud-builders/kubectl'
+    env:
+    # - 'CLOUDSDK_COMPUTE_ZONE=''
+    - 'CLOUDSDK_CONTAINER_CLUSTER=gke-cluster-5504'
+    - 'CLOUDSDK_COMPUTE_REGION=us-central1'
+    args: ['apply', '-f', 'gke-pvc.yaml']
+
+  - name: 'gcr.io/cloud-builders/kubectl'
+    env:
+    # - 'CLOUDSDK_COMPUTE_ZONE=''
+    - 'CLOUDSDK_CONTAINER_CLUSTER=gke-cluster-5504'
+    - 'CLOUDSDK_COMPUTE_REGION=us-central1'
+    args: ['apply', '-f', 'gke-deployment.yaml']
+
+  - name: 'gcr.io/cloud-builders/kubectl'
+    env:
+    # - 'CLOUDSDK_COMPUTE_ZONE=''
+    - 'CLOUDSDK_CONTAINER_CLUSTER=gke-cluster-5504'
+    - 'CLOUDSDK_COMPUTE_REGION=us-central1'
+    args: ['apply', '-f', 'gke-service.yaml']
+
+
+substitutions:
+  _IMAGE_: 'gcr.io/cloud-computing-401614/container-1:latest'
+  # https://cloud.google.com/artifact-registry/docs/docker/pushing-and-pulling#:~:text=To%20push%20a%20local%20image,image%20digest%20in%20the%20repository.
+  _AR_IMAGE_: 'us-central1-docker.pkg.dev/cloud-computing-401614/image-repository/container-1:latest'
+
+# https://stackoverflow.com/questions/68779751/error-publishing-source-code-from-cloud-build-to-a-bucket-using-triggers
+options:
+  logging: CLOUD_LOGGING_ONLY
+
+# Good Example reference: https://github.com/GoogleCloudPlatform/cloud-build-samples/blob/main/python-example-flask/cloudbuild.yaml
